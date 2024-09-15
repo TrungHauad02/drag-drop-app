@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Task from "./Task";
-import { Droppable } from "react-beautiful-dnd";
+import { Droppable, Draggable } from "react-beautiful-dnd";
 
 function Column(props) {
     const Container = styled.div`
@@ -26,27 +26,38 @@ function Column(props) {
     const isDropDisabled = props.column.id === 'column-3'; // disable dropping for column-3
 
   return (
-    <Container>
-        <Title>{props.column.title}</Title>
-        <Droppable 
-            droppableId={props.column.id}
-            type={props.column.id === 'column-3' ? 'done' : 'active'} // define the type of draggable items that can be dropped into this droppable
-            isDropDisabled={isDropDisabled} // disable dropable by condition
-            >
-        {
-            (provided, snapshot) => (
-                <TaskList
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    isDraggingOver={snapshot.isDraggingOver}
+    <Draggable draggableId={props.column.id} index={props.index}>
+        {(provided) => (
+            <Container
+                {...provided.draggableProps}
+                ref={provided.innerRef}
                 >
-                    {props.tasks.map((task, index) => <Task key={task.id} task={task} index={index}/>)}
-                    {provided.placeholder}
-                </TaskList>
-            )
-        }
-        </Droppable>
-    </Container>
+            <Title 
+                {...provided.dragHandleProps}
+                >{props.column.title}</Title>
+            <Droppable 
+                droppableId={props.column.id}
+                //type={props.column.id === 'column-3' ? 'done' : 'active'} // define the type of draggable items that can be dropped into this droppable
+                type="task"
+                isDropDisabled={isDropDisabled} // disable dropable by condition
+                direction="vertical" // set the direction of the droppable -> DEFAULT: vertical
+                >
+            {
+                (provided, snapshot) => (
+                    <TaskList
+                        ref={provided.innerRef} 
+                        {...provided.droppableProps} // Định nghĩa thành phần có thể thả vào. => Trong trường hợp này ta có thể thả Task vào TaskList
+                        isDraggingOver={snapshot.isDraggingOver}
+                    >
+                        {props.tasks.map((task, index) => <Task key={task.id} task={task} index={index}/>)}
+                        {provided.placeholder} {/* add a placeholder to the TaskList to indicate where a draggable item will be dropped */}
+                    </TaskList>
+                )
+            }
+            </Droppable>
+        </Container>
+        )}
+    </Draggable>
   );
 }
 
